@@ -2,12 +2,14 @@
 import os
 import sys
 from random import choice
+from time import sleep
 
 from typing import List
 from typing import Tuple
 
 WORD_LIST_FILE = "words.txt"
 MAX_GUESSES = 6
+SLEEP_TIME = 3
 
 
 class WordGuessError(Exception):
@@ -48,49 +50,67 @@ def setup_word(word: str) -> Tuple[List[str], List[str]]:
     return split_word, blank_word
 
 
+def display(letters: List[str], blank_word: List[str], guess_num: int) -> None:
+    clear_screen()
+    print("Word Guess")
+    print()
+    print(*letters)
+    print()
+    print(*blank_word)
+    print()
+    print(f"Wrong Guesses {guess_num} out of {MAX_GUESSES}")
+
+
 def play(word: str) -> None:
     split_word, blank_word = setup_word(word)
     letters = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-    number_of_guesses = 1
-    while number_of_guesses <= MAX_GUESSES:
-        clear_screen()
-        print("Word Guess")
-        print()
-        print(*letters)
-        print()
-        print(*blank_word)
-        print()
-        print(f"Guess {number_of_guesses} out of {MAX_GUESSES}")
-        user_input = input("Enter an unused letter or 'quit': ").upper()
+    number_of_guesses = 0
+    while number_of_guesses < MAX_GUESSES:
+        display(letters, blank_word, number_of_guesses)
+        user_input = input("Enter a letter or 'quit' to quit: ").upper()
+
         if user_input == "QUIT":
+            print("quitting")
             return
+
+        elif len(user_input) > 1 or not user_input.isalpha():
+            print("Invalid input please try again")
+            sleep(SLEEP_TIME)
+            continue
+
         if user_input not in letters:  # already been guessed
             print("Letter already been picked try again")
+            sleep(SLEEP_TIME)
             continue
+
         else:
+            # replace letter with space
+            for i, letter in enumerate(letters):
+                if letter == user_input:
+                    letters[i] = " "
+                    break
+
             if user_input in split_word:
                 # replace blank with letter
                 for i, letter in enumerate(split_word):
                     if letter == user_input:
                         blank_word[i] = letter
-                # replace letter with space
-                for i, letter in enumerate(letters):
-                    if letter == user_input:
-                        letters[i] = " "
-                        break
+
                 if blank_word == split_word:
-                    print("You got the word.  You Won!")
+                    display(letters, blank_word, number_of_guesses)
+                    print("You Won! You got the word")
+                    sleep(SLEEP_TIME)
                     return
+
             else:  # not in word
-                print("not in word")
-                # replace letter with space
-                for i, letter in enumerate(letters):
-                    if letter == user_input:
-                        letters[i] = " "
-                        break
+                print(f"Letter {user_input} not in the word")
+                sleep(SLEEP_TIME)
                 number_of_guesses += 1
-    print("out of guesses")
+
+    display(letters, blank_word, number_of_guesses)
+    print("Out of guesses")
     print(f"The word was  {word}")
+    sleep(SLEEP_TIME)
     return
 
 
