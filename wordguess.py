@@ -137,8 +137,14 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = argument_parser(argv)
     word_list = load_words()
-    rand_word = random_word(word_list)
-    play(rand_word, args.num_wrong_guesses)
+    while True:
+        rand_word = random_word(word_list)
+        play(rand_word, args.num_wrong_guesses)
+        user_input = input("Would you like to play again? (Yes or no): ")
+        if user_input.upper() in ["YES", "Y"]:
+            continue
+        else:
+            break
     return 0
 
 
