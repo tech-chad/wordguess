@@ -1,14 +1,19 @@
 # Word guessing game by selecting letters one at a time.
+import argparse
 import os
 import sys
 from random import choice
 from time import sleep
 
+import argparse_types
+
 from typing import List
+from typing import Optional
+from typing import Sequence
 from typing import Tuple
 
 WORD_LIST_FILE = "words.txt"
-MAX_GUESSES = 6
+DEFAULT_NUM_WRONG_GUESSES = 6
 SLEEP_TIME = 3
 
 
@@ -50,7 +55,10 @@ def setup_word(word: str) -> Tuple[List[str], List[str]]:
     return split_word, blank_word
 
 
-def display(letters: List[str], blank_word: List[str], guess_num: int) -> None:
+def display(letters: List[str],
+            blank_word: List[str],
+            guess_num: int,
+            num_wrong_guesses: int) -> None:
     clear_screen()
     print("Word Guess")
     print()
@@ -58,15 +66,15 @@ def display(letters: List[str], blank_word: List[str], guess_num: int) -> None:
     print()
     print(*blank_word)
     print()
-    print(f"Wrong Guesses {guess_num} out of {MAX_GUESSES}")
+    print(f"Wrong Guesses {guess_num} out of {num_wrong_guesses}")
 
 
-def play(word: str) -> None:
+def play(word: str, num_wrong_guesses: int) -> None:
     split_word, blank_word = setup_word(word)
     letters = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
     number_of_guesses = 0
-    while number_of_guesses < MAX_GUESSES:
-        display(letters, blank_word, number_of_guesses)
+    while number_of_guesses < num_wrong_guesses:
+        display(letters, blank_word, number_of_guesses, num_wrong_guesses)
         user_input = input("Enter a letter or 'quit' to quit: ").upper()
 
         if user_input == "QUIT":
@@ -97,7 +105,9 @@ def play(word: str) -> None:
                         blank_word[i] = letter
 
                 if blank_word == split_word:
-                    display(letters, blank_word, number_of_guesses)
+                    display(letters, blank_word,
+                            number_of_guesses, num_wrong_guesses)
+
                     print("You Won! You got the word")
                     sleep(SLEEP_TIME)
                     return
@@ -107,17 +117,28 @@ def play(word: str) -> None:
                 sleep(SLEEP_TIME)
                 number_of_guesses += 1
 
-    display(letters, blank_word, number_of_guesses)
+    display(letters, blank_word, number_of_guesses, num_wrong_guesses)
     print("Out of guesses")
     print(f"The word was  {word}")
     sleep(SLEEP_TIME)
     return
 
 
-def main() -> int:
+def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-W", dest="num_wrong_guesses",
+                        type=argparse_types.pos_int,
+                        default=DEFAULT_NUM_WRONG_GUESSES,
+                        help="Number of wrong guess default: %(default)s"),
+
+    return parser.parse_args(argv)
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    args = argument_parser(argv)
     word_list = load_words()
     rand_word = random_word(word_list)
-    play(rand_word)
+    play(rand_word, args.num_wrong_guesses)
     return 0
 
 
