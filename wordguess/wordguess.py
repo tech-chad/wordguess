@@ -31,8 +31,13 @@ def clear_screen() -> None:
 def load_words() -> List[str]:
     # load words from file return list of capitalized words
     words = []
+    if os.path.exists(WORD_LIST_FILE):
+        word_file = WORD_LIST_FILE
+    else:
+        word_file = os.path.join(os.path.dirname(__file__), WORD_LIST_FILE)
+
     try:
-        with open(WORD_LIST_FILE, "r") as f:
+        with open(word_file, "r") as f:
             data = f.read()
     except FileNotFoundError:
         raise WordGuessError("Error words.txt file not found")

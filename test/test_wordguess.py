@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-import wordguess
+from wordguess import wordguess
 
 
 def mock_input(*args):

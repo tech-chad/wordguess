@@ -1,1 +1,1 @@
-include words.txt
+include wordguess/words.txt
