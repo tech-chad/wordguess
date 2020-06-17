@@ -20,7 +20,7 @@ def test_load_words(tmpdir):
     tf = tmpdir.join("words.txt")
     tf.write("\n".join(test_words))
     with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
-        result = wordguess.load_words(15)
+        result = wordguess.load_words(4, 15)
 
     assert result == test_words
 
@@ -29,7 +29,7 @@ def test_load_words_file_not_found(tmpdir, capsys):
     tf = tmpdir.join("words.txt")
     with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
         with pytest.raises(wordguess.WordGuessError):
-            wordguess.load_words(15)
+            wordguess.load_words(4, 15)
             captured = capsys.readouterr().err
             assert "Error words.txt file not found" in captured
 
@@ -45,8 +45,35 @@ def test_load_words_max_length(tmpdir, test_length, expected_result):
     tf = tmpdir.join("words.txt")
     tf.write("\n".join(test_words))
     with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
-        result = wordguess.load_words(test_length)
+        result = wordguess.load_words(4, test_length)
     assert result == expected_result
+
+
+@pytest.mark.parametrize("test_length, expected_result", [
+    (10, ["INSTRUMENT", "TEMPERATURE", "CONSTRUCTION", "SUBSCRIPTIONS",
+          "IDENTIFICATION"]),
+    (12, ["CONSTRUCTION", "SUBSCRIPTIONS", "IDENTIFICATION"]),
+])
+def test_load_words_min_length(tmpdir, test_length, expected_result):
+    test_words = ["TEST", "FISHER", "PRODUCE", "INSTRUMENT", "TEMPERATURE",
+                  "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
+                  "IDENTIFICATION"]
+    tf = tmpdir.join("words.txt")
+    tf.write("\n".join(test_words))
+    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
+        result = wordguess.load_words(test_length, 15)
+    assert result == expected_result
+
+
+def test_load_words_min_max_length(tmpdir):
+    test_words = ["TEST", "FISHER", "PRODUCE", "INSTRUMENT", "TEMPERATURE",
+                  "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
+                  "IDENTIFICATION"]
+    tf = tmpdir.join("words.txt")
+    tf.write("\n".join(test_words))
+    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
+        result = wordguess.load_words(10, 10)
+    assert result == ["INSTRUMENT"]
 
 
 def test_random_word():
@@ -152,3 +179,28 @@ def test_argument_parser_max_word_length(test_length, expected_result):
 def test_argument_parser_max_word_length_error(test_length):
     with pytest.raises(SystemExit):
         wordguess.argument_parser(["--max", test_length])
+
+
+@pytest.mark.parametrize("test_length, expected_result", [
+    ("10", 10), ("15", 15), ("4", 4), ("8", 8)
+])
+def test_argument_parser_min_word_length(test_length, expected_result):
+    result = wordguess.argument_parser(["--min", test_length])
+    assert result.min == expected_result
+
+
+@pytest.mark.parametrize("test_length", [
+    "-20", "-1", "0", "1", "3", "16", "200",
+    "test", "f5", "8.8",
+])
+def test_argument_parser_min_word_length_error(test_length):
+    with pytest.raises(SystemExit):
+        wordguess.argument_parser(["--min", test_length])
+
+
+def test_main_min_max_invalid(capsys):
+    result = wordguess.main(["--min", "8", "--max", "6"])
+    captured = capsys.readouterr().out
+    assert result == 1
+    assert "Error min can't be larger than max" in captured
+

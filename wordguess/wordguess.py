@@ -16,6 +16,7 @@ from typing import Tuple
 WORD_LIST_FILE = "words.txt"
 DEFAULT_NUM_WRONG_GUESSES = 6
 DEFAULT_MAX_LENGTH = 15
+DEFAULT_MIN_LENGTH = 4
 SLEEP_TIME = 3
 
 
@@ -30,7 +31,7 @@ def clear_screen() -> None:
         os.system("clear")
 
 
-def load_words(max_length: int) -> List[str]:
+def load_words(min_length: int, max_length: int) -> List[str]:
     # load words from file return list of capitalized words
     words = []
     if os.path.exists(WORD_LIST_FILE):
@@ -45,7 +46,7 @@ def load_words(max_length: int) -> List[str]:
         raise WordGuessError("Error words.txt file not found")
     else:
         for w in data.split():
-            if len(w) <= max_length:
+            if min_length <= len(w) <= max_length:
                 words.append(w)
 
         return words
@@ -141,13 +142,18 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         help="Number of wrong guess default: %(default)s")
     parser.add_argument("--max", type=word_length, default=DEFAULT_MAX_LENGTH,
                         help="Max word length between 4 and 15")
+    parser.add_argument("--min", type=word_length, default=DEFAULT_MIN_LENGTH,
+                        help="Min word length between 4 and 15")
 
     return parser.parse_args(argv)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = argument_parser(argv)
-    word_list = load_words(args.mex)
+    if args.min > args.max:
+        print("Error min can't be larger than max")
+        return 1
+    word_list = load_words(args.min, args.max)
     while True:
         rand_word = random_word(word_list)
         play(rand_word, args.num_wrong_guesses)
