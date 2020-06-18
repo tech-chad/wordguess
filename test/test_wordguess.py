@@ -89,7 +89,7 @@ def test_setup_word():
                       ["_", "_", "_", "_", "_", "_", "_"])
 
 
-def test_display_start(capsys):
+def test_display_start_no_color(capsys):
     num_wrong_guesses = wordguess.DEFAULT_NUM_WRONG_GUESSES
     expected_capture = f"""Word Guess
 
@@ -100,46 +100,82 @@ _ _ _ _ _ _
 Wrong Guesses 1 out of {num_wrong_guesses}
 """
     l = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-    wordguess.display(l, ["_", "_", "_", "_", "_", "_"], 1, num_wrong_guesses)
+    b = ["_", "_", "_", "_", "_", "_"]
+    wordguess.display(l, b, 1, num_wrong_guesses, False)
     captured = capsys.readouterr().out
     assert captured == expected_capture
 
 
-def test_play_quit(capsys):
+def test_display_start_color(capsys):
+    num_wrong_guesses = wordguess.DEFAULT_NUM_WRONG_GUESSES
+    expected_capture = f"""\033[1;37;40mWord Guess\033[m
+
+A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
+_ _ _ _ _ _
+
+Wrong Guesses 1 out of {num_wrong_guesses}
+"""
+    l = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+    b = ["_", "_", "_", "_", "_", "_"]
+    wordguess.display(l, b, 1, num_wrong_guesses, True)
+    captured = capsys.readouterr().out
+    assert captured == expected_capture
+
+
+@pytest.mark.parametrize("color_mode", [True, False])
+def test_play_quit(capsys, color_mode):
     wordguess.input = mock_input("quit")
-    wordguess.play("LETTER", 6)
+    wordguess.play("LETTER", 6, color_mode)
     captured = capsys.readouterr().out
     assert "quitting" in captured
 
 
-def test_play_win(capsys):
+def test_play_win_no_color(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("L", "T", "E", "R")
-        wordguess.play("LETTER", 6)
+        wordguess.play("LETTER", 6, False)
         captured = capsys.readouterr().out
         assert "You Won! You got the word" in captured
+
+
+def test_play_win_color(capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        wordguess.input = mock_input("L", "T", "E", "R")
+        wordguess.play("LETTER", 6, True)
+        captured = capsys.readouterr().out
+        assert "\033[1;32mYou Won! You got the word\033[m" in captured
 
 
 def test_play_wrong_guess(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("L", "T", "W", "quit")
-        wordguess.play("LETTER", 6)
+        wordguess.play("LETTER", 6, False)
         captured = capsys.readouterr().out
         assert "Letter W not in the word" in captured
 
 
-def test_play_out_of_guesses(capsys):
+def test_play_out_of_guesses_no_color(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("K", "i", "l", "a", "s", "W", "z", "U")
-        wordguess.play("LETTER", 6)
+        wordguess.play("LETTER", 6, False)
         captured = capsys.readouterr().out
         assert "Out of guesses\nThe word was  LETTER" in captured
+
+
+def test_play_out_of_guesses_color(capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        wordguess.input = mock_input("K", "i", "l", "a", "s", "W", "z", "U")
+        wordguess.play("LETTER", 6, True)
+        captured = capsys.readouterr().out
+        expected = "\033[1;31mOut of guesses\033[m\nThe word was  LETTER"
+        assert expected in captured
 
 
 def test_play_letter_already_guessed(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("s", "t", "a", "R", "t", "quit")
-        wordguess.play("LETTER", 6)
+        wordguess.play("LETTER", 6, False)
         captured = capsys.readouterr().out
         assert "Letter already been picked try again" in captured
 
@@ -150,7 +186,7 @@ def test_play_letter_already_guessed(capsys):
 def test_play_invalid_input(capsys, test_input):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("s", test_input, "quit")
-        wordguess.play("LETTER", 6)
+        wordguess.play("LETTER", 6, False)
         captured = capsys.readouterr().out
         assert "Invalid input please try again" in captured
 
@@ -196,6 +232,14 @@ def test_argument_parser_min_word_length(test_length, expected_result):
 def test_argument_parser_min_word_length_error(test_length):
     with pytest.raises(SystemExit):
         wordguess.argument_parser(["--min", test_length])
+
+
+@pytest.mark.parametrize("test_input, expected_result", [
+    ([], True), (["--no_color"], False),
+])
+def test_argument_parser_no_color(test_input, expected_result):
+    result = wordguess.argument_parser(test_input)
+    assert result.no_color == expected_result
 
 
 def test_main_min_max_invalid(capsys):

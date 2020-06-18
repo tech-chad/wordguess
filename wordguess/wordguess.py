@@ -31,6 +31,13 @@ def clear_screen() -> None:
         os.system("clear")
 
 
+class Color:
+    red = "\033[1;31m"
+    green = "\033[1;32m"
+    white = "\033[1;37;40m"
+    reset = "\033[m"
+
+
 def load_words(min_length: int, max_length: int) -> List[str]:
     # load words from file return list of capitalized words
     words = []
@@ -67,9 +74,13 @@ def setup_word(word: str) -> Tuple[List[str], List[str]]:
 def display(letters: List[str],
             blank_word: List[str],
             guess_num: int,
-            num_wrong_guesses: int) -> None:
+            num_wrong_guesses: int,
+            color: bool) -> None:
     clear_screen()
-    print("Word Guess")
+    if color:
+        print(f"{Color.white}Word Guess{Color.reset}")
+    else:
+        print("Word Guess")
     print()
     print(*letters)
     print()
@@ -78,12 +89,13 @@ def display(letters: List[str],
     print(f"Wrong Guesses {guess_num} out of {num_wrong_guesses}")
 
 
-def play(word: str, num_wrong_guesses: int) -> None:
+def play(word: str, num_wrong_guesses: int, color: bool) -> None:
+    # clr = Color()
     split_word, blank_word = setup_word(word)
     letters = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-    number_of_guesses = 0
-    while number_of_guesses < num_wrong_guesses:
-        display(letters, blank_word, number_of_guesses, num_wrong_guesses)
+    num_of_guesses = 0
+    while num_of_guesses < num_wrong_guesses:
+        display(letters, blank_word, num_of_guesses, num_wrong_guesses, color)
         user_input = input("Enter a letter or 'quit' to quit: ").upper()
 
         if user_input == "QUIT":
@@ -91,7 +103,10 @@ def play(word: str, num_wrong_guesses: int) -> None:
             return
 
         elif len(user_input) > 1 or not user_input.isalpha():
-            print("Invalid input please try again")
+            if color:
+                print(f"{Color.red}Invalid input please try again{Color.reset}")
+            else:
+                print("Invalid input please try again")
             sleep(SLEEP_TIME)
             continue
 
@@ -115,19 +130,25 @@ def play(word: str, num_wrong_guesses: int) -> None:
 
                 if blank_word == split_word:
                     display(letters, blank_word,
-                            number_of_guesses, num_wrong_guesses)
-
-                    print("You Won! You got the word")
+                            num_of_guesses, num_wrong_guesses, color)
+                    msg = "You Won! You got the word"
+                    if color:
+                        print(f"{Color.green}{msg}{Color.reset}")
+                    else:
+                        print(msg)
                     sleep(SLEEP_TIME)
                     return
 
             else:  # not in word
                 print(f"Letter {user_input} not in the word")
                 sleep(SLEEP_TIME)
-                number_of_guesses += 1
+                num_of_guesses += 1
 
-    display(letters, blank_word, number_of_guesses, num_wrong_guesses)
-    print("Out of guesses")
+    display(letters, blank_word, num_of_guesses, num_wrong_guesses, color)
+    if color:
+        print(f"{Color.red}Out of guesses{Color.reset}")
+    else:
+        print("Out of guesses")
     print(f"The word was  {word}")
     sleep(SLEEP_TIME)
     return
@@ -144,6 +165,8 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         help="Max word length between 4 and 15")
     parser.add_argument("--min", type=word_length, default=DEFAULT_MIN_LENGTH,
                         help="Min word length between 4 and 15")
+    parser.add_argument("--no_color", action="store_false",
+                        help="No color mode")
 
     return parser.parse_args(argv)
 
@@ -156,7 +179,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     word_list = load_words(args.min, args.max)
     while True:
         rand_word = random_word(word_list)
-        play(rand_word, args.num_wrong_guesses)
+        play(rand_word, args.num_wrong_guesses, args.no_color)
         user_input = input("Would you like to play again? (Yes or no): ")
         if user_input.upper() in ["YES", "Y"]:
             continue
