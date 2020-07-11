@@ -242,6 +242,13 @@ def test_argument_parser_no_color(test_input, expected_result):
     assert result.no_color == expected_result
 
 
+def test_display_version(capsys):
+    with pytest.raises(SystemExit):
+        wordguess.argument_parser(["--version"])
+    captured = capsys.readouterr().out
+    assert f"{wordguess.version}\n" == captured
+
+
 def test_main_min_max_invalid(capsys):
     result = wordguess.main(["--min", "8", "--max", "6"])
     captured = capsys.readouterr().out

@@ -13,6 +13,13 @@ from typing import Optional
 from typing import Sequence
 from typing import Tuple
 
+if sys.version_info >= (3, 8):
+    import importlib.metadata as importlib_metadata
+else:
+    import importlib_metadata
+
+version = importlib_metadata.version("wordguess")
+
 WORD_LIST_FILE = "words.txt"
 DEFAULT_NUM_WRONG_GUESSES = 6
 DEFAULT_MAX_LENGTH = 15
@@ -167,6 +174,7 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         help="Min word length between 4 and 15")
     parser.add_argument("--no_color", action="store_false",
                         help="No color mode")
+    parser.add_argument("--version", action="version", version=version)
 
     return parser.parse_args(argv)
 
