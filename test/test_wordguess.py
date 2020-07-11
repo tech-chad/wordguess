@@ -147,6 +147,17 @@ def test_play_win_color(capsys):
         assert "\033[1;32mYou Won! You got the word\033[m" in captured
 
 
+def test_main_play_again(capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        with mock.patch.object(wordguess, "load_words", return_value=["LETTER"]):
+            wordguess.input = mock_input("L", "T", "E", "R", "N")
+            wordguess.main()
+            captured = capsys.readouterr().out
+            assert "\033[1;32mYou Won! You got the word\033[m" in captured
+            assert "Would you like to play again? (Yes or no):" in captured
+
+
+
 def test_play_wrong_guess(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("L", "T", "W", "quit")
