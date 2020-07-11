@@ -168,6 +168,8 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         type=argparse_types.pos_int,
                         default=DEFAULT_NUM_WRONG_GUESSES,
                         help="Number of wrong guess default: %(default)s")
+    parser.add_argument("-s", dest="single_play", action="store_true",
+                        help="single play then exit")
     parser.add_argument("--max", type=word_length, default=DEFAULT_MAX_LENGTH,
                         help="Max word length between 4 and 15")
     parser.add_argument("--min", type=word_length, default=DEFAULT_MIN_LENGTH,
@@ -188,11 +190,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     while True:
         rand_word = random_word(word_list)
         play(rand_word, args.num_wrong_guesses, args.no_color)
-        user_input = input("Would you like to play again? (Yes or no): ")
-        if user_input.upper() in ["YES", "Y"]:
-            continue
-        else:
+        if args.single_play:
             break
+        else:
+            user_input = input("Would you like to play again? (Yes or no): ")
+            if user_input.upper() in ["YES", "Y"]:
+                continue
+            else:
+                break
     return 0
 
 

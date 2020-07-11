@@ -157,6 +157,15 @@ def test_main_play_again(capsys):
             assert "Would you like to play again? (Yes or no):" in captured
 
 
+def test_main_single_play(capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        with mock.patch.object(wordguess, "load_words", return_value=["LETTER"]):
+            wordguess.input = mock_input("L", "T", "E", "R", "N")
+            wordguess.main(["-s"])
+            captured = capsys.readouterr().out
+            assert "\033[1;32mYou Won! You got the word\033[m" in captured
+            assert "Would you like to play again? (Yes or no):" not in captured
+
 
 def test_play_wrong_guess(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
@@ -251,6 +260,14 @@ def test_argument_parser_min_word_length_error(test_length):
 def test_argument_parser_no_color(test_input, expected_result):
     result = wordguess.argument_parser(test_input)
     assert result.no_color == expected_result
+
+
+@pytest.mark.parametrize("test_input, expected_result", [
+    ([], False), (["-s"], True)
+])
+def test_argument_parser_single_play(test_input, expected_result):
+    result = wordguess.argument_parser(test_input)
+    assert result.single_play == expected_result
 
 
 def test_display_version(capsys):
