@@ -96,7 +96,7 @@ def display(letters: List[str],
     print(f"Wrong Guesses {guess_num} out of {num_wrong_guesses}")
 
 
-def play(word: str, num_wrong_guesses: int, color: bool) -> None:
+def play(word: str, num_wrong_guesses: int, color: bool) -> int:
     # clr = Color()
     split_word, blank_word = setup_word(word)
     letters = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
@@ -107,7 +107,7 @@ def play(word: str, num_wrong_guesses: int, color: bool) -> None:
 
         if user_input == "QUIT":
             print("quitting")
-            return
+            return -1
 
         elif len(user_input) > 1 or not user_input.isalpha():
             if color:
@@ -144,7 +144,7 @@ def play(word: str, num_wrong_guesses: int, color: bool) -> None:
                     else:
                         print(msg)
                     sleep(SLEEP_TIME)
-                    return
+                    return 0
 
             else:  # not in word
                 print(f"Letter {user_input} not in the word")
@@ -158,7 +158,7 @@ def play(word: str, num_wrong_guesses: int, color: bool) -> None:
         print("Out of guesses")
     print(f"The word was  {word}")
     sleep(SLEEP_TIME)
-    return
+    return 0
 
 
 def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
@@ -170,6 +170,8 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         help="Number of wrong guess default: %(default)s")
     parser.add_argument("-s", dest="single_play", action="store_true",
                         help="single play then exit")
+    parser.add_argument("-a", dest="auto_play", action="store_true",
+                        help="continues game play until 'quit' is entered")
     parser.add_argument("--max", type=word_length, default=DEFAULT_MAX_LENGTH,
                         help="Max word length between 4 and 15")
     parser.add_argument("--min", type=word_length, default=DEFAULT_MIN_LENGTH,
@@ -189,9 +191,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     word_list = load_words(args.min, args.max)
     while True:
         rand_word = random_word(word_list)
-        play(rand_word, args.num_wrong_guesses, args.no_color)
-        if args.single_play:
+        return_value = play(rand_word, args.num_wrong_guesses, args.no_color)
+        if args.single_play or args.auto_play and return_value == -1:
             break
+        elif args.auto_play:
+            continue
         else:
             user_input = input("Would you like to play again? (Yes or no): ")
             if user_input.upper() in ["YES", "Y"]:
