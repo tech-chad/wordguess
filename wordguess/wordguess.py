@@ -18,6 +18,11 @@ if sys.version_info >= (3, 8):
 else:
     import importlib_metadata
 
+if sys.version_info >= (3, 7):
+    from importlib.resources import read_text
+else:
+    from importlib_resources import read_text
+
 version = importlib_metadata.version("wordguess")
 
 WORD_LIST_FILE = "words.txt"
@@ -25,10 +30,6 @@ DEFAULT_NUM_WRONG_GUESSES = 6
 DEFAULT_MAX_LENGTH = 15
 DEFAULT_MIN_LENGTH = 4
 SLEEP_TIME = 3
-
-
-class WordGuessError(Exception):
-    pass
 
 
 def clear_screen() -> None:
@@ -48,22 +49,12 @@ class Color:
 def load_words(min_length: int, max_length: int) -> List[str]:
     # load words from file return list of capitalized words
     words = []
-    if os.path.exists(WORD_LIST_FILE):
-        word_file = WORD_LIST_FILE
-    else:
-        word_file = os.path.join(os.path.dirname(__file__), WORD_LIST_FILE)
+    data = read_text("wordguess", WORD_LIST_FILE)
+    for w in data.split():
+        if min_length <= len(w) <= max_length:
+            words.append(w)
 
-    try:
-        with open(word_file, "r") as f:
-            data = f.read()
-    except FileNotFoundError:
-        raise WordGuessError("Error words.txt file not found")
-    else:
-        for w in data.split():
-            if min_length <= len(w) <= max_length:
-                words.append(w)
-
-        return words
+    return words
 
 
 def random_word(word_list: List[str]) -> str:

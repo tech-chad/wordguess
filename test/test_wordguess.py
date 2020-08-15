@@ -17,21 +17,11 @@ def mock_input(*args):
 
 def test_load_words(tmpdir):
     test_words = ["TESTING", "PYTHON", "FINISH", "YELLOW", "ORANGE"]
-    tf = tmpdir.join("words.txt")
-    tf.write("\n".join(test_words))
-    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
+    test_word_str = "\n".join(test_words)
+    with mock.patch.object(wordguess, "read_text", return_value=test_word_str):
         result = wordguess.load_words(4, 15)
 
     assert result == test_words
-
-
-def test_load_words_file_not_found(tmpdir, capsys):
-    tf = tmpdir.join("words.txt")
-    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
-        with pytest.raises(wordguess.WordGuessError):
-            wordguess.load_words(4, 15)
-            captured = capsys.readouterr().err
-            assert "Error words.txt file not found" in captured
 
 
 @pytest.mark.parametrize("test_length, expected_result", [
@@ -42,9 +32,8 @@ def test_load_words_max_length(tmpdir, test_length, expected_result):
     test_words = ["TEST", "FISHER", "PRODUCE", "INSTRUMENT", "TEMPERATURE",
                   "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
                   "IDENTIFICATION"]
-    tf = tmpdir.join("words.txt")
-    tf.write("\n".join(test_words))
-    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
+    test_words_str = "\n".join(test_words)
+    with mock.patch.object(wordguess, "read_text", return_value=test_words_str):
         result = wordguess.load_words(4, test_length)
     assert result == expected_result
 
@@ -58,9 +47,8 @@ def test_load_words_min_length(tmpdir, test_length, expected_result):
     test_words = ["TEST", "FISHER", "PRODUCE", "INSTRUMENT", "TEMPERATURE",
                   "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
                   "IDENTIFICATION"]
-    tf = tmpdir.join("words.txt")
-    tf.write("\n".join(test_words))
-    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
+    test_words_str = "\n".join(test_words)
+    with mock.patch.object(wordguess, "read_text", return_value=test_words_str):
         result = wordguess.load_words(test_length, 15)
     assert result == expected_result
 
@@ -69,9 +57,8 @@ def test_load_words_min_max_length(tmpdir):
     test_words = ["TEST", "FISHER", "PRODUCE", "INSTRUMENT", "TEMPERATURE",
                   "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
                   "IDENTIFICATION"]
-    tf = tmpdir.join("words.txt")
-    tf.write("\n".join(test_words))
-    with mock.patch.object(wordguess, "WORD_LIST_FILE", tf.strpath):
+    test_words_str = "\n".join(test_words)
+    with mock.patch.object(wordguess, "read_text", return_value=test_words_str):
         result = wordguess.load_words(10, 10)
     assert result == ["INSTRUMENT"]
 
