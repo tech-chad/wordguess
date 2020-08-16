@@ -113,7 +113,7 @@ Wrong Guesses 1 out of {num_wrong_guesses}
 @pytest.mark.parametrize("color_mode", [True, False])
 def test_play_quit(capsys, color_mode):
     wordguess.input = mock_input("quit")
-    wordguess.play("LETTER", 6, color_mode)
+    wordguess.play("LETTER", 6, color_mode, True)
     captured = capsys.readouterr().out
     assert "quitting" in captured
 
@@ -121,7 +121,7 @@ def test_play_quit(capsys, color_mode):
 def test_play_win_no_color(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("L", "T", "E", "R")
-        wordguess.play("LETTER", 6, False)
+        wordguess.play("LETTER", 6, False, True)
         captured = capsys.readouterr().out
         assert "You Won! You got the word" in captured
 
@@ -129,7 +129,7 @@ def test_play_win_no_color(capsys):
 def test_play_win_color(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("L", "T", "E", "R")
-        wordguess.play("LETTER", 6, True)
+        wordguess.play("LETTER", 6, True, True)
         captured = capsys.readouterr().out
         assert "\033[1;32mYou Won! You got the word\033[m" in captured
 
@@ -168,7 +168,7 @@ def test_main_auto_play(capsys):
 def test_play_wrong_guess(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("L", "T", "W", "quit")
-        wordguess.play("LETTER", 6, False)
+        wordguess.play("LETTER", 6, False, True)
         captured = capsys.readouterr().out
         assert "Letter W not in the word" in captured
 
@@ -176,7 +176,7 @@ def test_play_wrong_guess(capsys):
 def test_play_out_of_guesses_no_color(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("K", "i", "l", "a", "s", "W", "z", "U")
-        wordguess.play("LETTER", 6, False)
+        wordguess.play("LETTER", 6, False, True)
         captured = capsys.readouterr().out
         assert "Out of guesses\nThe word was  LETTER" in captured
 
@@ -184,7 +184,7 @@ def test_play_out_of_guesses_no_color(capsys):
 def test_play_out_of_guesses_color(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("K", "i", "l", "a", "s", "W", "z", "U")
-        wordguess.play("LETTER", 6, True)
+        wordguess.play("LETTER", 6, True, True)
         captured = capsys.readouterr().out
         expected = "\033[1;31mOut of guesses\033[m\nThe word was  LETTER"
         assert expected in captured
@@ -193,18 +193,44 @@ def test_play_out_of_guesses_color(capsys):
 def test_play_letter_already_guessed(capsys):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("s", "t", "a", "R", "t", "quit")
-        wordguess.play("LETTER", 6, False)
+        wordguess.play("LETTER", 6, False, True)
         captured = capsys.readouterr().out
         assert "Letter already been picked try again" in captured
 
 
 @pytest.mark.parametrize("test_input", [
-    "1", "90909", "test", "3R", "?", "#", " ", "R9",
+    "1", "90909", "t23est", "3R", "?", "#", " ", "R9",
+    "test test", "test."
 ])
 def test_play_invalid_input(capsys, test_input):
     with mock.patch.object(wordguess, "SLEEP_TIME", 0):
         wordguess.input = mock_input("s", test_input, "quit")
-        wordguess.play("LETTER", 6, False)
+        wordguess.play("LETTER", 6, False, True)
+        captured = capsys.readouterr().out
+        assert "Invalid input please try again" in captured
+
+
+def test_play_guess_whole_word_correct(capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        wordguess.input = mock_input("s", "LETTER", "quit")
+        wordguess.play("LETTER", 6, False, True)
+        captured = capsys.readouterr().out
+        assert "You Won! You guessed the word" in captured
+
+
+def test_play_guess_whole_word_incorrect(capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        wordguess.input = mock_input("s", "TESTING", "quit")
+        wordguess.play("LETTER", 6, False, True)
+        captured = capsys.readouterr().out
+        assert "TESTING is not the correct word" in captured
+
+
+@pytest.mark.parametrize("test_input", ["TESTING", "LETTER"])
+def test_play_guess_whole_word_false(test_input, capsys):
+    with mock.patch.object(wordguess, "SLEEP_TIME", 0):
+        wordguess.input = mock_input("s", test_input, "quit")
+        wordguess.play("LETTER", 6, False, False)
         captured = capsys.readouterr().out
         assert "Invalid input please try again" in captured
 
@@ -274,6 +300,14 @@ def test_argument_parser_single_play(test_input, expected_result):
 def test_argument_parsing_auto_play(test_input, expected_result):
     result = wordguess.argument_parser(test_input)
     assert result.auto_play == expected_result
+
+
+@pytest.mark.parametrize("test_input, expected_result", [
+    ([], True), (["-n"], False)
+])
+def test_argument_parsing_no_guess_word(test_input, expected_result):
+    result = wordguess.argument_parser(test_input)
+    assert result.guess_word == expected_result
 
 
 def test_display_version(capsys):

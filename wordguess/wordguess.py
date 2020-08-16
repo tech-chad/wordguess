@@ -87,7 +87,10 @@ def display(letters: List[str],
     print(f"Wrong Guesses {guess_num} out of {num_wrong_guesses}")
 
 
-def play(word: str, num_wrong_guesses: int, color: bool) -> int:
+def play(word: str,
+         num_wrong_guesses: int,
+         color: bool,
+         guess_word: bool) -> int:
     # clr = Color()
     split_word, blank_word = setup_word(word)
     letters = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
@@ -100,7 +103,7 @@ def play(word: str, num_wrong_guesses: int, color: bool) -> int:
             print("quitting")
             return -1
 
-        elif len(user_input) > 1 or not user_input.isalpha():
+        elif not user_input.isalpha():
             if color:
                 print(f"{Color.red}Invalid input please try again{Color.reset}")
             else:
@@ -108,7 +111,31 @@ def play(word: str, num_wrong_guesses: int, color: bool) -> int:
             sleep(SLEEP_TIME)
             continue
 
-        if user_input not in letters:  # already been guessed
+        elif len(user_input) > 1:
+            if guess_word and user_input == word:
+                display(letters, split_word,
+                        num_of_guesses, num_wrong_guesses, color)
+                msg = "You Won! You guessed the word"
+                if color:
+                    print(f"{Color.green}{msg}{Color.reset}")
+                else:
+                    print(msg)
+                sleep(SLEEP_TIME)
+                return 0
+            elif guess_word and user_input != word:
+                print(f"{user_input} is not the correct word")
+                sleep(SLEEP_TIME)
+                num_of_guesses += 1
+            else:
+                if color:
+                    print(
+                        f"{Color.red}Invalid input please try again{Color.reset}")
+                else:
+                    print("Invalid input please try again")
+                sleep(SLEEP_TIME)
+                continue
+
+        elif user_input not in letters:  # already been guessed
             print("Letter already been picked try again")
             sleep(SLEEP_TIME)
             continue
@@ -167,6 +194,9 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         help="Max word length between 4 and 15")
     parser.add_argument("--min", type=word_length, default=DEFAULT_MIN_LENGTH,
                         help="Min word length between 4 and 15")
+    parser.add_argument("-n", "--no_guess_word", dest="guess_word",
+                        action="store_false",
+                        help="Do not allow guessing of the whole word")
     parser.add_argument("--no_color", action="store_false",
                         help="No color mode")
     parser.add_argument("--version", action="version", version=version)
@@ -182,7 +212,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     word_list = load_words(args.min, args.max)
     while True:
         rand_word = random_word(word_list)
-        return_value = play(rand_word, args.num_wrong_guesses, args.no_color)
+        return_value = play(rand_word,
+                            args.num_wrong_guesses,
+                            args.no_color,
+                            args.guess_word)
         if args.single_play or args.auto_play and return_value == -1:
             break
         elif args.auto_play:
