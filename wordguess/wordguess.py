@@ -6,9 +6,6 @@ import sys
 from random import choice
 from time import sleep
 
-import argparse_types
-import argparse_custom_types
-
 from typing import List
 from typing import Optional
 from typing import Sequence
@@ -175,20 +172,50 @@ def play(word: str,
     return 0
 
 
+def positive_int(value: str) -> int:
+    """
+    Used by argparse.
+    Checks to see if the value is positive.
+    """
+    msg = f"{value} is an invalid positive int value"
+    try:
+        int_value = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(msg)
+    else:
+        if int_value <= 0:
+            raise argparse.ArgumentTypeError(msg)
+    return int_value
+
+
+def int_between_4_and_15(value: str) -> int:
+    """
+    Used by argparse. Checks to see if the value is between 4 and 15
+    """
+    msg = f"{value} is an invalid positive int between 4 and 15"
+    try:
+        int_value = int(value)
+        if int_value < 4 or int_value > 15:
+            raise argparse.ArgumentTypeError(msg)
+        return int_value
+    except ValueError:
+        raise argparse.ArgumentTypeError(msg)
+
+
 def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
-    word_length = argparse_custom_types.int_range(4, 16)
+    # word_length = argparse_custom_types.int_range(4, 16)
     parser = argparse.ArgumentParser()
     parser.add_argument("-W", dest="num_wrong_guesses",
-                        type=argparse_types.pos_int,
+                        type=positive_int,
                         default=DEFAULT_NUM_WRONG_GUESSES,
                         help="Number of wrong guess default: %(default)s")
     parser.add_argument("-s", dest="single_play", action="store_true",
                         help="single play then exit")
     parser.add_argument("-a", dest="auto_play", action="store_true",
                         help="continues game play until 'quit' is entered")
-    parser.add_argument("--max", type=word_length, default=DEFAULT_MAX_LENGTH,
+    parser.add_argument("--max", type=int_between_4_and_15, default=DEFAULT_MAX_LENGTH,
                         help="Max word length between 4 and 15")
-    parser.add_argument("--min", type=word_length, default=DEFAULT_MIN_LENGTH,
+    parser.add_argument("--min", type=int_between_4_and_15, default=DEFAULT_MIN_LENGTH,
                         help="Min word length between 4 and 15")
     parser.add_argument("-n", "--no_guess_word", dest="guess_word",
                         action="store_false",

@@ -327,3 +327,35 @@ def test_main_min_max_invalid(capsys):
     assert result == 1
     assert "Error min can't be larger than max" in captured
 
+
+@pytest.mark.parametrize("test_values, expected_results", [
+    ("1", 1), ("2", 2), ("6", 6), ("20", 20), ("500", 500)
+])
+def test_positive_int_normal(test_values, expected_results):
+    result = wordguess.positive_int(test_values)
+    assert result == expected_results
+
+
+@pytest.mark.parametrize("test_values", [
+    "0", "-3", "1.3", "0.4", "10.4", "a", "b", "", " ", "$", "time32"
+])
+def test_positive_int_error(test_values):
+    with pytest.raises(wordguess.argparse.ArgumentTypeError):
+        wordguess.positive_int(test_values)
+
+
+@pytest.mark.parametrize("test_value, expected_result", [
+    ("4", 4), ("6", 6), ("10", 10), ("14", 14), ("15", 15),
+])
+def test_int_between_4_and_15(test_value, expected_result):
+    result = wordguess.int_between_4_and_15(test_value)
+    assert result == expected_result
+
+
+@pytest.mark.parametrize("test_values", [
+    "0", "256", "34.4", "Blue", "test", "-4", "1001", "", " ", "c40", "30c",
+    "*", "-C", "&", "100", "245", "1", "3", "16"
+])
+def test_int_between_4_and_15_error(test_values):
+    with pytest.raises(wordguess.argparse.ArgumentTypeError):
+        wordguess.int_between_4_and_15(test_values)
