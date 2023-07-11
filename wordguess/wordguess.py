@@ -2,9 +2,9 @@
 import argparse
 import importlib.resources
 import os
+import random
 import sys
-from random import choice
-from time import sleep
+import time
 
 from typing import List
 from typing import Optional
@@ -50,11 +50,6 @@ def load_words(min_length: int, max_length: int) -> List[str]:
     return words
 
 
-def random_word(word_list: List[str]) -> str:
-    word = choice(word_list)
-    return word
-
-
 def setup_word(word: str) -> Tuple[List[str], List[str]]:
     # split word into letters, make a blank word using _ for the letter
     split_word = [x for x in word]
@@ -84,7 +79,6 @@ def play(word: str,
          num_wrong_guesses: int,
          color: bool,
          guess_word: bool) -> int:
-    # clr = Color()
     split_word, blank_word = setup_word(word)
     letters = [x for x in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
     num_of_guesses = 0
@@ -101,7 +95,7 @@ def play(word: str,
                 print(f"{Color.red}Invalid input please try again{Color.reset}")
             else:
                 print("Invalid input please try again")
-            sleep(SLEEP_TIME)
+            time.sleep(SLEEP_TIME)
             continue
 
         elif len(user_input) > 1:
@@ -113,24 +107,25 @@ def play(word: str,
                     print(f"{Color.green}{msg}{Color.reset}")
                 else:
                     print(msg)
-                sleep(SLEEP_TIME)
+                time.sleep(SLEEP_TIME)
                 return 0
             elif guess_word and user_input != word:
                 print(f"{user_input} is not the correct word")
-                sleep(SLEEP_TIME)
+                time.sleep(SLEEP_TIME)
                 num_of_guesses += 1
             else:
                 if color:
                     print(
-                        f"{Color.red}Invalid input please try again{Color.reset}")
+                        f"{Color.red}Invalid input please try "
+                        f"again{Color.reset}")
                 else:
                     print("Invalid input please try again")
-                sleep(SLEEP_TIME)
+                time.sleep(SLEEP_TIME)
                 continue
 
         elif user_input not in letters:  # already been guessed
             print("Letter already been picked try again")
-            sleep(SLEEP_TIME)
+            time.sleep(SLEEP_TIME)
             continue
 
         else:
@@ -154,12 +149,12 @@ def play(word: str,
                         print(f"{Color.green}{msg}{Color.reset}")
                     else:
                         print(msg)
-                    sleep(SLEEP_TIME)
+                    time.sleep(SLEEP_TIME)
                     return 0
 
             else:  # not in word
                 print(f"Letter {user_input} not in the word")
-                sleep(SLEEP_TIME)
+                time.sleep(SLEEP_TIME)
                 num_of_guesses += 1
 
     display(letters, blank_word, num_of_guesses, num_wrong_guesses, color)
@@ -168,7 +163,7 @@ def play(word: str,
     else:
         print("Out of guesses")
     print(f"The word was  {word}")
-    sleep(SLEEP_TIME)
+    time.sleep(SLEEP_TIME)
     return 0
 
 
@@ -213,9 +208,11 @@ def argument_parser(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
                         help="single play then exit")
     parser.add_argument("-a", dest="auto_play", action="store_true",
                         help="continues game play until 'quit' is entered")
-    parser.add_argument("--max", type=int_between_4_and_15, default=DEFAULT_MAX_LENGTH,
+    parser.add_argument("--max", type=int_between_4_and_15,
+                        default=DEFAULT_MAX_LENGTH,
                         help="Max word length between 4 and 15")
-    parser.add_argument("--min", type=int_between_4_and_15, default=DEFAULT_MIN_LENGTH,
+    parser.add_argument("--min", type=int_between_4_and_15,
+                        default=DEFAULT_MIN_LENGTH,
                         help="Min word length between 4 and 15")
     parser.add_argument("-n", "--no_guess_word", dest="guess_word",
                         action="store_false",
@@ -234,7 +231,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 1
     word_list = load_words(args.min, args.max)
     while True:
-        rand_word = random_word(word_list)
+        rand_word = random.choice(word_list)
         return_value = play(rand_word,
                             args.num_wrong_guesses,
                             args.no_color,
