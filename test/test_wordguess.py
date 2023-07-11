@@ -119,7 +119,7 @@ def test_play_quit(capsys, color_mode):
     wordguess.input = mock_input("quit")
     wordguess.play("LETTER", 6, color_mode, True)
     captured = capsys.readouterr().out
-    assert "quitting" in captured
+    assert "Quitting" in captured
 
 
 def test_play_win_no_color(capsys):
@@ -166,7 +166,7 @@ def test_main_auto_play(capsys):
             captured = capsys.readouterr().out
             assert "\033[1;32mYou Won! You got the word\033[m" in captured
             assert "Would you like to play again? (Yes or no):" not in captured
-            assert "quitting" in captured
+            assert "Quitting" in captured
 
 
 def test_play_wrong_guess(capsys):

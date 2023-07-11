@@ -36,6 +36,7 @@ class Color:
     red = "\033[1;31m"
     green = "\033[1;32m"
     white = "\033[1;37;40m"
+    yellow = "\033[1;93;93m"
     reset = "\033[m"
 
 
@@ -87,7 +88,7 @@ def play(word: str,
         user_input = input("Enter a letter or 'quit' to quit: ").upper()
 
         if user_input == "QUIT":
-            print("quitting")
+            print("Quitting")
             return -1
 
         elif not user_input.isalpha():
@@ -110,7 +111,8 @@ def play(word: str,
                 time.sleep(SLEEP_TIME)
                 return 0
             elif guess_word and user_input != word:
-                print(f"{user_input} is not the correct word")
+                print(f"{Color.yellow}{user_input} is not the correct "
+                      f"word{Color.reset}")
                 time.sleep(SLEEP_TIME)
                 num_of_guesses += 1
             else:
@@ -124,7 +126,8 @@ def play(word: str,
                 continue
 
         elif user_input not in letters:  # already been guessed
-            print("Letter already been picked try again")
+            print(f"{Color.yellow}Letter already been picked try "
+                  f"again{Color.reset}")
             time.sleep(SLEEP_TIME)
             continue
 
@@ -153,7 +156,8 @@ def play(word: str,
                     return 0
 
             else:  # not in word
-                print(f"Letter {user_input} not in the word")
+                print(f"{Color.yellow}Letter {user_input} not in the "
+                      f"word{Color.reset}")
                 time.sleep(SLEEP_TIME)
                 num_of_guesses += 1
 
@@ -241,6 +245,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         elif args.auto_play:
             continue
         else:
+            print()
             user_input = input("Would you like to play again? (Yes or no): ")
             if user_input.upper() in ["YES", "Y"]:
                 continue
