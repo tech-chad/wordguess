@@ -1,5 +1,6 @@
 # Word guessing game by selecting letters one at a time.
 import argparse
+import importlib.resources
 import os
 import sys
 from random import choice
@@ -17,11 +18,6 @@ if sys.version_info >= (3, 8):
     import importlib.metadata as importlib_metadata
 else:
     import importlib_metadata
-
-if sys.version_info >= (3, 7):
-    from importlib.resources import read_text
-else:
-    from importlib_resources import read_text
 
 version = importlib_metadata.version("wordguess")
 
@@ -49,7 +45,7 @@ class Color:
 def load_words(min_length: int, max_length: int) -> List[str]:
     # load words from file return list of capitalized words
     words = []
-    data = read_text("wordguess", WORD_LIST_FILE)
+    data = importlib.resources.read_text("wordguess", WORD_LIST_FILE)
     for w in data.split():
         if min_length <= len(w) <= max_length:
             words.append(w)

@@ -18,7 +18,8 @@ def mock_input(*args):
 def test_load_words(tmpdir):
     test_words = ["TESTING", "PYTHON", "FINISH", "YELLOW", "ORANGE"]
     test_word_str = "\n".join(test_words)
-    with mock.patch.object(wordguess, "read_text", return_value=test_word_str):
+    with mock.patch.object(wordguess.importlib.resources, "read_text",
+                           return_value=test_word_str):
         result = wordguess.load_words(4, 15)
 
     assert result == test_words
@@ -33,7 +34,8 @@ def test_load_words_max_length(tmpdir, test_length, expected_result):
                   "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
                   "IDENTIFICATION"]
     test_words_str = "\n".join(test_words)
-    with mock.patch.object(wordguess, "read_text", return_value=test_words_str):
+    with mock.patch.object(wordguess.importlib.resources, "read_text",
+                           return_value=test_words_str):
         result = wordguess.load_words(4, test_length)
     assert result == expected_result
 
@@ -48,7 +50,8 @@ def test_load_words_min_length(tmpdir, test_length, expected_result):
                   "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
                   "IDENTIFICATION"]
     test_words_str = "\n".join(test_words)
-    with mock.patch.object(wordguess, "read_text", return_value=test_words_str):
+    with mock.patch.object(wordguess.importlib.resources, "read_text",
+                           return_value=test_words_str):
         result = wordguess.load_words(test_length, 15)
     assert result == expected_result
 
@@ -58,7 +61,8 @@ def test_load_words_min_max_length(tmpdir):
                   "CONSTRUCTION", "SUBSCRIPTIONS", "LIGHT", "SHIELD",
                   "IDENTIFICATION"]
     test_words_str = "\n".join(test_words)
-    with mock.patch.object(wordguess, "read_text", return_value=test_words_str):
+    with mock.patch.object(wordguess.importlib.resources, "read_text",
+                           return_value=test_words_str):
         result = wordguess.load_words(10, 10)
     assert result == ["INSTRUMENT"]
 
